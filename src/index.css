@@ -1311,3 +1311,47 @@ button {
 .followup-btn:hover:not(.secondary) {
   transform: translateY(-2px);
 }
+
+/* ========== Predictions Banner ========== */
+.predictions-banner {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.prediction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+.prediction-item>div {
+  display: flex;
+  flex-direction: column;
+}
+
+.prediction-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.prediction-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.prediction-item.pms-active {
+  background: linear-gradient(135deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.05));
+  padding: 0.5rem 0.75rem;
+  border-radius: 20px;
+  color: var(--color-primary-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+}

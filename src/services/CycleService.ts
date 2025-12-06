@@ -136,5 +136,83 @@ export const CycleService = {
             phase: phaseInfo,
             isPeriodDue: currentCycleDay > (config.cycleLength - 3)
         };
+    },
+
+    /**
+     * PREDICTIVE ENGINE - Forecasts upcoming cycle events
+     */
+    getPredictions(config: CycleConfig | null) {
+        if (!config) {
+            return null;
+        }
+
+        const lastPeriod = new Date(config.lastPeriodDate);
+        const today = new Date();
+        const cycleLength = config.cycleLength;
+
+        // Calculate days since last period
+        const diffTime = today.getTime() - lastPeriod.getTime();
+        const daysSinceLastPeriod = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        // --- Next Period Prediction ---
+        const cyclesPassed = Math.floor(daysSinceLastPeriod / cycleLength);
+        const nextPeriodStart = new Date(lastPeriod);
+        nextPeriodStart.setDate(lastPeriod.getDate() + (cyclesPassed + 1) * cycleLength);
+
+        const daysUntilPeriod = Math.ceil((nextPeriodStart.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        // --- PMS Window (5-7 days before period) ---
+        const pmsStart = new Date(nextPeriodStart);
+        pmsStart.setDate(pmsStart.getDate() - 7);
+        const pmsEnd = new Date(nextPeriodStart);
+        pmsEnd.setDate(pmsEnd.getDate() - 1);
+
+        const isInPMS = today >= pmsStart && today <= pmsEnd;
+        const daysUntilPMS = isInPMS ? 0 : Math.max(0, Math.ceil((pmsStart.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+        // --- Ovulation Prediction (typically day 14 of cycle, or cycleLength - 14) ---
+        const ovulationDay = cycleLength - 14; // Days from start of cycle
+        const currentCycleStart = new Date(lastPeriod);
+        currentCycleStart.setDate(lastPeriod.getDate() + cyclesPassed * cycleLength);
+
+        const ovulationDate = new Date(currentCycleStart);
+        ovulationDate.setDate(currentCycleStart.getDate() + ovulationDay);
+
+        // If ovulation already passed this cycle, calculate next cycle's
+        let nextOvulation = ovulationDate;
+        if (today > ovulationDate) {
+            nextOvulation = new Date(currentCycleStart);
+            nextOvulation.setDate(currentCycleStart.getDate() + cycleLength + ovulationDay);
+        }
+        const daysUntilOvulation = Math.ceil((nextOvulation.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        // --- Fertile Window (5 days before ovulation + ovulation day) ---
+        const fertileStart = new Date(nextOvulation);
+        fertileStart.setDate(fertileStart.getDate() - 5);
+        const isInFertileWindow = today >= fertileStart && today <= nextOvulation;
+
+        return {
+            nextPeriod: {
+                date: nextPeriodStart,
+                daysUntil: daysUntilPeriod,
+                dateString: nextPeriodStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            },
+            pms: {
+                startDate: pmsStart,
+                endDate: pmsEnd,
+                isActive: isInPMS,
+                daysUntil: daysUntilPMS
+            },
+            ovulation: {
+                date: nextOvulation,
+                daysUntil: daysUntilOvulation,
+                dateString: nextOvulation.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            },
+            fertileWindow: {
+                startDate: fertileStart,
+                endDate: nextOvulation,
+                isActive: isInFertileWindow
+            }
+        };
     }
 };
