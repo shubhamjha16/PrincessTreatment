@@ -17,8 +17,15 @@ export const Dashboard: React.FC = () => {
             if (user) {
                 config = await CycleService.getCycleConfig(user.uid);
             }
-            const data = CycleService.calculatePhase(config);
-            const preds = CycleService.getPredictions(config);
+
+            // Use demo config if no real config exists
+            const effectiveConfig = config || {
+                lastPeriodDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 14 days ago
+                cycleLength: 28
+            };
+
+            const data = CycleService.calculatePhase(effectiveConfig);
+            const preds = CycleService.getPredictions(effectiveConfig);
             setPhaseData(data);
             setPredictions(preds);
         };
