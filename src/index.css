@@ -1355,3 +1355,127 @@ button {
   font-size: 0.85rem;
   font-weight: 500;
 }
+
+/* ========== Agentic Commerce - Chat Product Cards ========== */
+.product-suggestion-bubble {
+  max-width: 95% !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(250, 245, 255, 0.9)) !important;
+  padding: 1rem !important;
+}
+
+.care-suggestion-text {
+  font-size: 0.9rem;
+  color: var(--color-primary-deep);
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.product-cards-row {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.chat-product-card {
+  background: white;
+  border-radius: var(--radius-md);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  min-width: 160px;
+  max-width: 160px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chat-product-image-wrapper {
+  position: relative;
+  height: 100px;
+  overflow: hidden;
+}
+
+.chat-product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-product-like-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.chat-product-info {
+  padding: 0.5rem;
+}
+
+.chat-product-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.chat-product-brand {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+}
+
+.chat-product-price {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary-main);
+  margin-top: 4px;
+}
+
+.chat-product-actions {
+  padding: 0.5rem;
+  padding-top: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.chat-product-btn {
+  flex: 1;
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.chat-product-btn.primary {
+  background: var(--color-primary-main);
+  color: white;
+}
+
+.chat-product-btn.primary:hover {
+  background: var(--color-primary-deep);
+}
+
+.chat-product-btn.secondary {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-deep);
+}
+
+.chat-product-btn.secondary:hover {
+  background: var(--color-primary-main);
+  color: white;
+}

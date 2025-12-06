@@ -2,12 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Send, Mic, RefreshCw } from 'lucide-react';
 import { aiService } from '../services/AIService';
 import { VoiceService } from '../services/VoiceService';
+import { detectIntent, getCareSuggestion } from '../services/IntentService';
+import { ChatProductCard } from '../components/ChatProductCard';
+import { ProductModal } from '../components/ProductModal';
+import { type Product } from '../context/ShopContext';
 
 interface Message {
     id: string;
     text: string;
-    sender: 'user' | 'ai';
+    sender: 'user' | 'ai' | 'product';
     timestamp: Date;
+    products?: Product[]; // For product suggestion messages
+    careSuggestion?: string;
 }
 
 export const Chat: React.FC = () => {
@@ -18,6 +24,7 @@ export const Chat: React.FC = () => {
     const [isTyping, setIsTyping] = useState(false);
     const [isListening, setIsListening] = useState(false);
     const [voiceService, setVoiceService] = useState<VoiceService | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -40,11 +47,28 @@ export const Chat: React.FC = () => {
         setIsTyping(true);
 
         try {
-            // Mock context - in real app would come from Dashboard/CycleService state
-            const responseText = await aiService.generateChatResponse(text, { cyclePhase: 'Luteal', mood: 'Tired' });
+            // AGENTIC COMMERCE: Detect intent from user message
+            const intent = detectIntent(text);
 
+            // Generate AI response
+            const responseText = await aiService.generateChatResponse(text, { cyclePhase: 'Luteal', mood: 'Tired' });
             const aiMsg: Message = { id: (Date.now() + 1).toString(), text: responseText, sender: 'ai', timestamp: new Date() };
             setMessages(prev => [...prev, aiMsg]);
+
+            // If intent detected, show product suggestions after AI response
+            if (intent.type !== 'none' && intent.suggestedProducts.length > 0) {
+                setTimeout(() => {
+                    const productMsg: Message = {
+                        id: (Date.now() + 2).toString(),
+                        text: '',
+                        sender: 'product',
+                        timestamp: new Date(),
+                        products: intent.suggestedProducts,
+                        careSuggestion: getCareSuggestion(intent.type)
+                    };
+                    setMessages(prev => [...prev, productMsg]);
+                }, 800); // Slight delay for natural feel
+            }
         } catch (e) {
             console.error(e);
         } finally {
@@ -56,7 +80,7 @@ export const Chat: React.FC = () => {
         if (!voiceService) return;
 
         if (isListening) {
-            // Stop listening logic if implemented, for now assuming it stops on end
+            // Stop listening
         } else {
             setIsListening(true);
             voiceService.startListening(
@@ -80,17 +104,42 @@ export const Chat: React.FC = () => {
                     <h2 className="greeting">Chat with Aura</h2>
                     <p className="subtitle">Your empathetic AI companion</p>
                 </div>
-                <button className="icon-btn" onClick={() => setMessages([])} title="Clear Chat">
+                <button className="icon-btn" onClick={() => setMessages([
+                    { id: '1', text: "Hello, Princess. How are you feeling today? 🌸", sender: 'ai', timestamp: new Date() }
+                ])} title="Clear Chat">
                     <RefreshCw size={20} />
                 </button>
             </header>
 
             <div className="message-list">
-                {messages.map(msg => (
-                    <div key={msg.id} className={`message-bubble ${msg.sender === 'user' ? 'sent' : 'received'}`}>
-                        {msg.text}
-                    </div>
-                ))}
+                {messages.map(msg => {
+                    // Product suggestion card
+                    if (msg.sender === 'product' && msg.products) {
+                        return (
+                            <div key={msg.id} className="message-bubble received product-suggestion-bubble">
+                                {msg.careSuggestion && (
+                                    <p className="care-suggestion-text">{msg.careSuggestion}</p>
+                                )}
+                                <div className="product-cards-row">
+                                    {msg.products.map(product => (
+                                        <ChatProductCard
+                                            key={product.id}
+                                            product={product}
+                                            onViewDetails={() => setSelectedProduct(product)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    // Normal text message
+                    return (
+                        <div key={msg.id} className={`message-bubble ${msg.sender === 'user' ? 'sent' : 'received'}`}>
+                            {msg.text}
+                        </div>
+                    );
+                })}
                 {isTyping && (
                     <div className="message-bubble received typing-indicator">
                         <span></span><span></span><span></span>
@@ -121,6 +170,12 @@ export const Chat: React.FC = () => {
                     </button>
                 </form>
             </div>
+
+            {/* Product Modal for detailed view */}
+            <ProductModal
+                product={selectedProduct}
+                onClose={() => setSelectedProduct(null)}
+            />
         </div>
     );
 };
